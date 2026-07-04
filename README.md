@@ -1,155 +1,234 @@
-# Web Spec Generator Pro
+<div align="center">
+  <br/>
+  <img src="https://img.shields.io/badge/version-3.0.0-6366f1?style=for-the-badge&labelColor=0f172a" alt="Version"/>
+  <img src="https://img.shields.io/badge/license-MIT-22c55e?style=for-the-badge&labelColor=0f172a" alt="License"/>
+  <img src="https://img.shields.io/badge/ai-cohere/north--mini--code-818cf8?style=for-the-badge&labelColor=0f172a" alt="AI Model"/>
+  <br/><br/>
+</div>
 
-> ใส่ลิงก์เว็บไซต์ → AI วิเคราะห์ → ได้ Spec + Prompt พร้อมใช้
+<div align="center">
+  <h1>
+    <img src="https://img.icons8.com/fluency/48/code.png" width="32" style="vertical-align: middle;"/>
+    Web Spec Generator
+  </h1>
+  <p>
+    <b>ใส่ลิงก์เว็บไซต์ → AI วิเคราะห์ → ได้ Spec Full-Stack 14 Sections พร้อมใช้</b>
+  </p>
+  <p>
+    <i>Reverse-engineer any website into a complete production-ready system specification</i>
+  </p>
+</div>
 
-```
-https://github.com/Aa-ok99/web-spec-generator
-```
+<br/>
+
+<p align="center">
+  <a href="#-quick-start">Quick Start</a> •
+  <a href="#-features">Features</a> •
+  <a href="#-14-section-spec">Spec Sections</a> •
+  <a href="#-architecture">Architecture</a> •
+  <a href="#-api-endpoints">API</a> •
+  <a href="#-configuration">Configuration</a>
+</p>
+
+<br/>
 
 ---
 
-## ✨ ความสามารถ
+## 🚀 Quick Start
 
-| ฟีเจอร์ | รายละเอียด |
-|---------|-----------|
-| วิเคราะห์เว็บ | ใส่ URL → ดึงโครงสร้างเว็บ → AI วิเคราะห์ → ได้ Spec ครบ |
-| Export PDF | ดาวน์โหลด Spec เป็นไฟล์ PDF |
-| Download .md | ดาวน์โหลด Spec เป็นไฟล์ Markdown |
-| คัดลอก Prompt | คัดลอก Prompt สำหรับให้ AI ตัวอื่นสร้างเว็บต่อ |
-| แชร์ลิงก์ | สร้างลิงก์แชร์ให้คนอื่นดู Spec ได้ |
-| ประวัติ | ดู/โหลดซ้ำ/ลบ ประวัติที่วิเคราะห์แล้ว (เก็บ 100 รายการ) |
-| Dark Mode | สลับธีมสว่าง/มืดได้ |
-| Responsive | ใช้ได้ทุกอุปกรณ์ มือถือ แท็บเล็ต คอมพิวเตอร์ |
-
----
-
-## 🚀 วิธีใช้งาน (สำหรับผู้ใช้ทั่วไป)
-
-### สิ่งที่ต้องมี
-- **Node.js** — [ดาวน์โหลดที่นี่](https://nodejs.org/) (เลือก LTS)
-- **OpenRouter API Key** — [สมัครฟรีที่นี่](https://openrouter.ai/keys) (กด "Create Key")
-
-### ขั้นตอน (คัดลอกแล้ววางทีละคำสั่ง)
-
-**1. ดาวน์โหลดโปรเจค**
 ```bash
+# 1. Clone
 git clone https://github.com/Aa-ok99/web-spec-generator.git
 cd web-spec-generator
-```
 
-**2. ติดตั้ง dependencies**
-```bash
-cd backend
-npm install
-cd ..
-```
+# 2. Install
+cd backend && npm install && cd ..
 
-**3. ตั้งค่า API Key**
-```bash
-# เปิดไฟล์ .env ด้วยโปรแกรม editor (หรือใช้คำสั่งด้านล่าง)
-# แล้วเปลี่ยน sk-or-v1-xxxxxxxx... เป็น Key จริงของคุณ
-nano backend/.env
-```
-
-หรือใช้คำสั่งแทนการเปิด editor:
-```bash
-# ใส่ Key จริงของคุณตรงนี้ (ไม่ต้องมี <>)
+# 3. Set API Key
 echo 'OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxxxxxxxxxxx' > backend/.env
-echo 'PORT=5000' >> backend/.env
-echo 'OPENROUTER_BASE_URL=https://openrouter.ai/api/v1' >> backend/.env
+
+# 4. Start
+chmod +x start.sh && ./start.sh
 ```
 
-**4. รันเซิร์ฟเวอร์**
-```bash
-./start.sh
-```
+Open **http://localhost:5000** → paste a URL → click **วิเคราะห์** → get a full 14-section system spec.
 
-หรือรันแบบ manual:
-```bash
-cd backend
-npm start
-```
-
-**5. เปิดเบราว์เซอร์**
-ไปที่ **http://localhost:5000**
+> **Requirements:** Node.js 18+, OpenRouter API key ([free here](https://openrouter.ai/keys))
 
 ---
 
-## 🎯 วิธีใช้
+## ✨ Features
 
-1. พิมพ์ลิงก์เว็บที่ต้องการวิเคราะห์ (เช่น `https://www.apple.com/th/iphone/`)
-2. กดปุ่ม **"วิเคราะห์"**
-3. รอ 5-15 วินาที (AI กำลังทำงาน)
-4. ได้ Spec พร้อมใช้งาน:
-   - กด **"คัดลอก Prompt"** → เอาไปให้ AI สร้างเว็บ
-   - กด **"PDF"** → ดาวน์โหลดเป็น PDF
-   - กด **"แชร์"** → ได้ลิงก์ส่งให้เพื่อน
-   - กด **".md"** → ดาวน์โหลดเป็น Markdown
+<div>
+
+| Feature | What it does |
+|---------|--------------|
+| **🎨 Design Extraction** | 8 cheerio extractors — colors, fonts, CSS vars, layout patterns, media queries, animations |
+| **🤖 2-Stage AI Pipeline** | Frontend round (sections 1-8) + Backend round (sections 9-14) — each with full token budget |
+| **📋 Clone Prompt** | Copy-paste ready prompt for AI to rebuild the site pixel-perfect |
+| **🏗️ Backend Spec** | System architecture, API contracts, data models, event system, recommendation engine |
+| **📄 Export** | PDF, Markdown (.md), HTML, shareable link |
+| **🔗 Share** | Generate a shareable URL with full spec view |
+| **📚 History** | Auto-save 100 most recent analyses with search & delete |
+| **🌓 Dark Mode** | System-aware theme with manual toggle |
+| **📱 Responsive** | Works on mobile, tablet, desktop |
+
+</div>
 
 ---
 
-## 🧩 ใช้กับ AI CLI (opencode)
+## 📋 14-Section Spec
 
-ติดตั้ง skill สำหรับใช้กับ opencode:
+### Round 1 — Frontend (2 LLM calls → 6KB prompt)
+
+| # | Section | What it covers |
+|---|---------|----------------|
+| 1 | **Site Overview** | URL, category, purpose, audience, content strategy |
+| 2 | **Design System** | Colors (hex/rgb), typography (font/size/weight), spacing (grid/gap/padding), visual effects (shadow/radius/transition) |
+| 3 | **Component Library** | Buttons, inputs, cards, nav, modals, lists, badges — each with all states (default/hover/active/disabled/focus/error) |
+| 4 | **Page Layout** | Responsive breakpoints, DOM tree, section-by-section breakdown |
+| 5 | **UX & Interaction** | Navigation, hover effects, focus/keyboard, form validation, loading/error/empty states, scroll animations |
+| 6 | **Accessibility** | ARIA labels/landmarks, color contrast (WCAG AA), focus indicators, keyboard nav |
+| 7 | **Performance** | Image optimization, lazy loading, code splitting, caching strategy |
+| 8 | **Clone Prompt** | Copy-paste prompt with all design tokens, component specs, file list, responsive rules, a11y |
+
+### Round 2 — Backend (2 LLM calls → 14KB prompt + frontend summary)
+
+| # | Section | What it covers |
+|---|---------|----------------|
+| 9 | **System Architecture** | Services & modules, communication patterns, caching, deployment |
+| 10 | **API Contracts** | Full REST endpoints with request/response schemas, error codes |
+| 11 | **Data Models** | User, Video, Event, Channel JSON schemas + SQL + Graph DB |
+| 12 | **Event System** | Event types, pipeline flow, canonical schema, signal weights |
+| 13 | **Recommendation Logic** | Ranking signals, scoring formula, cold start, diversity rules |
+| 14 | **Architecture Diagram** | Full system diagram with ASCII/mermaid rendering |
+
+---
+
+## 🏗️ Architecture
+
+```
+                        ┌─────────────────────────┐
+                        │     Client (Frontend)     │
+                        │  Static HTML/CSS/JS       │
+                        │  Served by Express at /   │
+                        └───────────┬─────────────┘
+                                    │ POST /api/analyze
+                                    ▼
+┌───────────────────────────────────────────────────────────────────┐
+│                    BACKEND (Express + CommonJS)                    │
+├───────────────────────────────────────────────────────────────────┤
+│  Route ──▶ Controller ──▶ Service ──▶ Repository ──▶ JSON File    │
+│                              │                                    │
+│                              ▼                                    │
+│  ┌──────────── 2-Stage Pipeline ───────────────────────────────┐  │
+│  │  ┌─────────┐   ┌──────────┐                                │  │
+│  │  │ Crawl   │──▶│ Analyze  │  (Shared stages 1-2)           │  │
+│  │  └─────────┘   └────┬─────┘                                │  │
+│  │                     │                                       │  │
+│  │          ┌──────────┴──────────┐                            │  │
+│  │          ▼                     ▼                            │  │
+│  │  ┌──────────────┐   ┌──────────────┐                       │  │
+│  │  │ Round 1      │   │ Round 2      │                       │  │
+│  │  │ Frontend     │   │ Backend      │                       │  │
+│  │  │ sections 1-8 │   │ sections 9-14│                       │  │
+│  │  │ 6KB prompt   │   │ 14KB prompt  │                       │  │
+│  │  └──────┬───────┘   └──────┬───────┘                       │  │
+│  │         └────────┬─────────┘                                │  │
+│  │                  ▼                                          │  │
+│  │          ┌──────────────┐                                   │  │
+│  │          │   Combine    │  → Complete 14-section spec       │  │
+│  │          └──────────────┘                                   │  │
+│  └─────────────────────────────────────────────────────────────┘  │
+│                                                                    │
+│  OpenRouter AI ─── llmService.js (retry 2x, backoff 1s→2s)       │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+### Key Files
+
+| Path | Role |
+|------|------|
+| `backend/server.js` | Express server, middleware, routes |
+| `backend/config/index.js` | Centralized constants (PORT, MODEL, RATE_LIMIT...) |
+| `backend/prompts/systemPromptFrontend.js` | 6KB prompt — sections 1-8 |
+| `backend/prompts/systemPromptBackend.js` | 14KB prompt — sections 9-14 |
+| `backend/services/pipelineService.js` | 2-stage pipeline orchestrator |
+| `backend/services/crawlerService.js` | cheerio-based web scraper |
+| `backend/services/analyzerService.js` | Layout/pattern/design detection |
+| `backend/services/llmService.js` | OpenRouter API caller with retry |
+| `backend/services/promptBuilderService.js` | Build frontend/backend prompts |
+| `backend/services/postProcessorService.js` | Validate + combine specs |
+| `backend/repositories/historyRepository.js` | Async CRUD (swap-ready for PostgreSQL) |
+| `backend/utils/extractors.js` | 8 cheerio extractors |
+| `backend/utils/pipelineLogger.js` | Per-step debug tracing |
+
+---
+
+## 🧩 Use with opencode CLI
 
 ```bash
-# ติดตั้ง skill
+# Install skill
 bash skill/install.sh
 
-# เปิด opencode แล้วใช้คำสั่ง:
-# "วิเคราะห์เว็บ https://example.com"
-# "Clone this website https://example.com"
+# Then in opencode:
+#   "วิเคราะห์เว็บ https://example.com"
+#   "Clone this website https://example.com"
 ```
 
 ---
 
-## 📋 API Endpoints (สำหรับนักพัฒนา)
+## 📡 API Endpoints
 
-| Method | Endpoint | คำอธิบาย |
-|--------|----------|---------|
-| `POST` | `/api/analyze` | วิเคราะห์ URL `{ url, apiKey? }` |
-| `GET` | `/api/history` | รายการประวัติทั้งหมด |
-| `GET` | `/api/history/:id` | ดูประวัติรายการ |
-| `DELETE` | `/api/history/:id` | ลบประวัติรายการ |
-| `DELETE` | `/api/history` | ล้างประวัติทั้งหมด |
-| `GET` | `/api/share/:id` | หน้าแชร์ Spec (HTML) |
-| `GET` | `/api/share/data/:id` | ข้อมูล Spec (JSON) |
-| `GET` | `/api/share/pdf/:id` | ดาวน์โหลด PDF |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/analyze` | Analyze URL `{ url, apiKey? }` → returns 14-section spec |
+| `GET` | `/api/history` | List all history (with spec preview) |
+| `GET` | `/api/history/:id` | Get single history entry |
+| `DELETE` | `/api/history/:id` | Delete history item |
+| `DELETE` | `/api/history` | Clear all history |
+| `GET` | `/api/share/:id` | Share page (HTML) |
+| `GET` | `/api/share/data/:id` | Share data (JSON) |
+| `GET` | `/api/share/pdf/:id` | Download PDF |
 
 ---
 
-## ⚙️ ตั้งค่าเพิ่มเติม
+## ⚙️ Configuration
 
-แก้ไขไฟล์ `backend/.env`:
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `5000` | Server port |
+| `OPENROUTER_API_KEY` | — | OpenRouter API key (required) |
+| `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | AI provider endpoint |
+| `MODEL` | `cohere/north-mini-code:free` | AI model (free) |
+| `RATE_LIMIT_MAX` | `10` | Max requests per minute |
+| `CORS_ORIGIN` | `*` | Allowed origins |
+| `HISTORY_PATH` | `backend/data/history.json` | History storage (swap to PostgreSQL via env) |
 
-```env
-PORT=5000                               # พอร์ตเซิร์ฟเวอร์
-OPENROUTER_API_KEY=sk-or-v1-xxxxx       # API Key ของคุณ
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1  # เปลี่ยน AI provider
-RATE_LIMIT_MAX=10                       # จำกัด request ต่อนาที
+---
+
+## 🔒 Security
+
+- **SSRF protection** — blocks localhost, 127.0.0.1, 10.x, 192.168.x
+- **URL validation** — http/https only
+- **Helmet headers** — security headers on all responses
+- **Rate limiting** — configurable per-minute limit
+- **Input sanitization** — validation at every layer (route → controller → service)
+- **API key safety** — resolved server-side, never exposed to frontend
+
+---
+
+## 🧪 Tests
+
+```bash
+cd backend
+npm test
 ```
 
----
-
-## 🔒 ความปลอดภัย
-
-- ป้องกัน SSRF (block localhost/private IP)
-- ตรวจสอบ URL (เฉพาะ http/https)
-- Helmet security headers
-- Rate limiting
-- ตรวจสอบ Input ทุกจุด
+Tests use isolated data files (`test-history.json`, `test-share.json`) via `process.env.HISTORY_PATH`.
 
 ---
 
-## 📝 หมายเหตุ
+## 📝 License
 
-- ใช้ AI โมเดล `cohere/north-mini-code:free` (ฟรี) — เปลี่ยนได้ที่ `backend/services/openrouterService.js`
-- ประวัติสูงสุด 100 รายการ (ลบอัตโนมัติเมื่อเกิน)
-- API Key จะถูกเก็บใน Local Storage ของเบราว์เซอร์เท่านั้น
-- เหมาะสำหรับการศึกษาและพัฒนาต่อยอด
-
----
-
-## 📄 License
-
-MIT
+MIT — use freely, modify, and share.
