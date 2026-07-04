@@ -88,6 +88,21 @@ npm start
 
 ---
 
+## 🧩 ใช้กับ AI CLI (opencode)
+
+ติดตั้ง skill สำหรับใช้กับ opencode:
+
+```bash
+# ติดตั้ง skill
+bash skill/install.sh
+
+# เปิด opencode แล้วใช้คำสั่ง:
+# "วิเคราะห์เว็บ https://example.com"
+# "Clone this website https://example.com"
+```
+
+---
+
 ## 📋 API Endpoints (สำหรับนักพัฒนา)
 
 | Method | Endpoint | คำอธิบาย |
