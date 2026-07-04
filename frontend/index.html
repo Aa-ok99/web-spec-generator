@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web Spec Generator Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+    <div class="container">
+        <header class="app-header">
+            <h1>
+                <i class="fas fa-code"></i>
+                Web Spec Generator
+                <span class="badge">Pro v3.0</span>
+            </h1>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                    <span id="themeLabel">Dark</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="analyze">
+                <i class="fas fa-magnifying-glass"></i> วิเคราะห์
+            </button>
+            <button class="tab" data-tab="history">
+                <i class="fas fa-clock-rotate-left"></i> ประวัติ
+                <span class="tab-badge" id="historyBadge">0</span>
+            </button>
+            <button class="tab" data-tab="settings">
+                <i class="fas fa-key"></i> API Key
+            </button>
+        </div>
+
+        <section class="tab-content active" id="tab-analyze">
+            <div class="card">
+                <h2><i class="fas fa-link" style="color:var(--accent);"></i> ใส่ลิงก์เว็บไซต์</h2>
+                <p style="color:var(--text-secondary); font-size:14px; margin-bottom:18px;">
+                    ระบบจะดึงข้อมูล วิเคราะห์ด้วย AI และสร้าง Spec + Prompt สำเร็จรูป
+                </p>
+                <div class="input-group">
+                    <input type="url" id="urlInput" placeholder="https://example.com" value="https://www.apple.com/th/iphone/" />
+                    <button class="btn btn-primary" id="analyzeBtn">
+                        <i class="fas fa-magnifying-glass"></i> วิเคราะห์
+                    </button>
+                </div>
+                <div class="loader" id="loader">
+                    <div class="spinner"></div>
+                    <span>กำลังวิเคราะห์... (ใช้ AI ประมาณ 5-15 วินาที)</span>
+                </div>
+            </div>
+
+            <div class="card" id="result" style="display:none;">
+                <div class="result-header">
+                    <h2><i class="fas fa-check-circle" style="color:var(--success);"></i> Spec & Prompt พร้อมใช้งาน</h2>
+                    <div class="result-actions">
+                        <span class="filename-badge" id="filenameBadge">
+                            <i class="far fa-file"></i> spec.md
+                        </span>
+                        <button class="btn btn-outline btn-sm" id="copyPromptBtn">
+                            <i class="fas fa-copy"></i> คัดลอก Prompt
+                        </button>
+                        <button class="btn btn-outline btn-sm" id="shareBtn">
+                            <i class="fas fa-share-nodes"></i> แชร์
+                        </button>
+                        <button class="btn btn-success btn-sm" id="downloadPdfBtn">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <button class="btn btn-success btn-sm" id="downloadMdBtn">
+                            <i class="fas fa-download"></i> .md
+                        </button>
+                    </div>
+                </div>
+                <div class="markdown-body" id="markdownPreview"></div>
+                <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">
+                    <small style="color:var(--text-muted);">
+                        <i class="fas fa-link"></i> ลิงก์แชร์: <span id="shareUrlDisplay" style="color:var(--accent);"></span>
+                    </small>
+                </div>
+            </div>
+        </section>
+
+        <section class="tab-content" id="tab-history">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+                    <h2><i class="fas fa-clock-rotate-left"></i> ประวัติการวิเคราะห์</h2>
+                    <button class="btn btn-danger btn-sm" id="clearHistoryBtn">
+                        <i class="fas fa-trash"></i> ล้างทั้งหมด
+                    </button>
+                </div>
+                <div id="historyList">
+                    <p style="color:var(--text-muted); text-align:center; padding:40px 0;">
+                        <i class="fas fa-inbox" style="font-size:32px; display:block; margin-bottom:12px;"></i>
+                        ยังไม่มีประวัติ
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="tab-content" id="tab-settings">
+            <div class="card">
+                <h2><i class="fas fa-key"></i> OpenRouter API Key</h2>
+                <p style="color:var(--text-secondary); font-size:14px; margin:8px 0 16px;">
+                    ใส่ API Key ของคุณ หรือใช้ค่าเริ่มต้นจากเซิร์ฟเวอร์ (ถ้ามีการตั้งค่าไว้)
+                </p>
+                <div class="input-group">
+                    <input type="password" id="apiKeyInput" placeholder="sk-or-v1-xxxxxxxxxxxxxxxxxxxxx" />
+                    <button class="btn btn-primary" id="saveApiKeyBtn">
+                        <i class="fas fa-save"></i> บันทึก
+                    </button>
+                </div>
+                <p style="color:var(--text-muted); font-size:12px; margin-top:8px;">
+                    <i class="fas fa-info-circle"></i> API Key จะถูกเก็บใน Local Storage ของเบราว์เซอร์เท่านั้น
+                </p>
+                <p style="color:var(--text-muted); font-size:12px; margin-top:4px;">
+                    <i class="fas fa-globe"></i> รับ Key ได้ที่ <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--accent);">openrouter.ai/keys</a>
+                </p>
+            </div>
+        </section>
+
+        <p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:24px; border-top:1px solid var(--border-color); padding-top:20px;">
+            <i class="fas fa-shield-alt"></i> ข้อมูลใช้เพื่อการศึกษาและพัฒนาต่อยอดเท่านั้น
+            <span style="display:inline-block; margin:0 8px;">·</span>
+            <i class="far fa-copyright"></i> 2026 Web Spec Generator Pro
+        </p>
+    </div>
+
+    <div class="toast" id="toast" data-type="success">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">สำเร็จ!</span>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/ui.js"></script>
+    <script src="/js/history.js"></script>
+    <script src="/js/app.js"></script>
+
+</body>
+</html>
