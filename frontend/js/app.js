@@ -25,6 +25,7 @@ const App = {
         document.getElementById('shareBtn').addEventListener('click', () => this.share());
         document.getElementById('downloadPdfBtn').addEventListener('click', () => this.downloadPdf());
         document.getElementById('downloadMdBtn').addEventListener('click', () => this.downloadMd());
+        document.getElementById('exportHtmlBtn').addEventListener('click', () => this.exportHtml());
 
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -123,6 +124,15 @@ const App = {
         return markdown;
     },
 
+    exportHtml() {
+        if (!this.currentMarkdown) {
+            UI.showToast('ยังไม่มีข้อมูล', 'warning');
+            return;
+        }
+        UI.exportHtml(this.currentMarkdown, this.currentFilename);
+        UI.showToast('ดาวน์โหลด HTML เรียบร้อย!');
+    },
+
     async copyPrompt() {
         if (!this.currentPromptOnly) {
             UI.showToast('ยังไม่มีข้อมูล', 'warning');
@@ -190,14 +200,15 @@ const App = {
         }
     },
 
-    toggleTheme() {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
+    getSystemTheme() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    },
+
+    applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
         const icon = document.getElementById('themeIcon');
         const label = document.getElementById('themeLabel');
-        if (next === 'dark') {
+        if (theme === 'dark') {
             icon.className = 'fas fa-sun';
             label.textContent = 'Light';
         } else {
@@ -206,15 +217,26 @@ const App = {
         }
     },
 
+    toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('theme', next);
+        this.applyTheme(next);
+    },
+
     loadSettings() {
         const key = localStorage.getItem('openrouter_api_key') || '';
         document.getElementById('apiKeyInput').value = key;
-        const theme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', theme);
-        if (theme === 'dark') {
-            document.getElementById('themeIcon').className = 'fas fa-sun';
-            document.getElementById('themeLabel').textContent = 'Light';
-        }
+
+        const saved = localStorage.getItem('theme');
+        const theme = saved || this.getSystemTheme();
+        this.applyTheme(theme);
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                this.applyTheme(e.matches ? 'dark' : 'light');
+            }
+        });
     },
 
     saveApiKey() {

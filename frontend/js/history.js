@@ -1,7 +1,10 @@
 const HistoryManager = {
+    _data: [],
+
     async loadHistory() {
         try {
             const data = await API.getHistory();
+            this._data = data;
             this.render(data);
             return data;
         } catch (error) {
@@ -48,8 +51,7 @@ const HistoryManager = {
         container.querySelectorAll('.load-history-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const id = btn.dataset.id;
-                HistoryManager.loadAndShow(id);
+                HistoryManager.loadAndShow(btn.dataset.id);
             });
         });
 
@@ -60,17 +62,29 @@ const HistoryManager = {
                 if (confirm('ลบรายการนี้?')) {
                     await API.deleteHistoryItem(id);
                     UI.showToast('ลบเรียบร้อย');
-                    HistoryManager.loadHistory();
+                    this.loadHistory();
                 }
             });
         });
 
         container.querySelectorAll('.history-item').forEach(el => {
             el.addEventListener('click', () => {
-                const id = el.dataset.id;
-                HistoryManager.loadAndShow(id);
+                this.loadAndShow(el.dataset.id);
             });
         });
+    },
+
+    filter(query) {
+        if (!query) {
+            this.render(this._data);
+            return;
+        }
+        const q = query.toLowerCase();
+        const filtered = this._data.filter(item =>
+            (item.title || '').toLowerCase().includes(q) ||
+            (item.url || '').toLowerCase().includes(q)
+        );
+        this.render(filtered);
     },
 
     async loadAndShow(id) {
@@ -90,3 +104,14 @@ const HistoryManager = {
         return div.innerHTML;
     }
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('historySearch');
+    if (searchInput) {
+        let timer;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => HistoryManager.filter(searchInput.value), 200);
+        });
+    }
+});
