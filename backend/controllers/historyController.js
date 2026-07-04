@@ -1,55 +1,41 @@
-const fs = require('fs-extra');
-const path = require('path');
+const historyService = require('../services/historyService');
 
-const HISTORY_PATH = path.join(__dirname, '../data/history.json');
-
-function getHistory() {
+async function getHistoryList(req, res) {
   try {
-    return fs.readJsonSync(HISTORY_PATH);
-  } catch {
-    return [];
+    const list = await historyService.getAll();
+    res.json(list);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }
 
-function getHistoryList(req, res) {
-  const history = getHistory();
-  const list = history.map(item => ({
-    id: item.id,
-    url: item.url,
-    title: item.title,
-    createdAt: item.createdAt,
-    specPreview: (item.spec || '').slice(0, 150) + '...'
-  }));
-  res.json(list);
+async function getHistoryItem(req, res) {
+  try {
+    const item = await historyService.getById(req.params.id);
+    res.json(item);
+  } catch (error) {
+    const status = error.statusCode || 500;
+    res.status(status).json({ error: error.message });
+  }
 }
 
-function getHistoryItem(req, res) {
-  const { id } = req.params;
-  if (!id || typeof id !== 'string' || id.length > 20) {
-    return res.status(400).json({ error: 'Invalid ID' });
+async function deleteHistoryItem(req, res) {
+  try {
+    await historyService.deleteById(req.params.id);
+    res.json({ success: true, message: 'Deleted' });
+  } catch (error) {
+    const status = error.statusCode || 500;
+    res.status(status).json({ error: error.message });
   }
-  const history = getHistory();
-  const item = history.find(h => h.id === id);
-  if (!item) {
-    return res.status(404).json({ error: 'History item not found' });
-  }
-  res.json(item);
 }
 
-function deleteHistoryItem(req, res) {
-  const { id } = req.params;
-  if (!id || typeof id !== 'string' || id.length > 20) {
-    return res.status(400).json({ error: 'Invalid ID' });
+async function clearHistory(req, res) {
+  try {
+    await historyService.clear();
+    res.json({ success: true, message: 'All history cleared' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-  let history = getHistory();
-  history = history.filter(h => h.id !== id);
-  fs.writeJsonSync(HISTORY_PATH, history, { spaces: 2 });
-  res.json({ success: true, message: 'Deleted' });
-}
-
-function clearHistory(req, res) {
-  fs.writeJsonSync(HISTORY_PATH, []);
-  res.json({ success: true, message: 'All history cleared' });
 }
 
 module.exports = {

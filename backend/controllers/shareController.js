@@ -1,41 +1,19 @@
-const fs = require('fs-extra');
-const path = require('path');
+const historyService = require('../services/historyService');
 const { jsPDF } = require('jspdf');
 
-const HISTORY_PATH = path.join(__dirname, '../data/history.json');
-
-function getHistory() {
+async function getShareData(req, res) {
   try {
-    return fs.readJsonSync(HISTORY_PATH);
-  } catch {
-    return [];
+    const item = await historyService.getById(req.params.id);
+    res.json(item);
+  } catch (error) {
+    const status = error.statusCode || 500;
+    res.status(status).json({ error: error.message });
   }
-}
-
-function getShareData(req, res) {
-  const { id } = req.params;
-  if (!id || typeof id !== 'string' || id.length > 20) {
-    return res.status(400).json({ error: 'Invalid ID' });
-  }
-  const history = getHistory();
-  const item = history.find(h => h.id === id);
-  if (!item) {
-    return res.status(404).json({ error: 'Data not found' });
-  }
-  res.json(item);
 }
 
 async function generatePDF(req, res) {
   try {
-    const { id } = req.params;
-    if (!id || typeof id !== 'string' || id.length > 20) {
-      return res.status(400).json({ error: 'Invalid ID' });
-    }
-    const history = getHistory();
-    const item = history.find(h => h.id === id);
-    if (!item) {
-      return res.status(404).json({ error: 'Data not found' });
-    }
+    const item = await historyService.getById(req.params.id);
 
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = 210;
@@ -64,19 +42,20 @@ async function generatePDF(req, res) {
     const pdfBuffer = doc.output('arraybuffer');
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${item.title || 'spec'}-${id}.pdf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${item.title || 'spec'}-${item.id}.pdf"`);
     res.send(Buffer.from(pdfBuffer));
 
   } catch (error) {
+    const status = error.statusCode || 500;
     console.error('PDF Error:', error);
-    res.status(500).json({ error: 'PDF generation failed: ' + error.message });
+    res.status(status).json({ error: 'PDF generation failed: ' + error.message });
   }
 }
 
 function getShareView(req, res) {
   const { id } = req.params;
   if (!id || typeof id !== 'string' || id.length > 20) {
-    return res.status(404).send('Invalid ID');
+    return res.status(400).send('Invalid ID');
   }
   const html = `
     <!DOCTYPE html>

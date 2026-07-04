@@ -110,20 +110,19 @@ const App = {
         const match = markdown.match(/\[COPY FROM HERE\]([\s\S]*?)\[COPY TO HERE\]/);
         if (match) return match[1].trim();
 
-        const cloneSection = markdown.match(/EXACT Clone Prompt.*?\n```text\n([\s\S]*?)```/);
+        const cloneSection = markdown.match(/EXACT Clone Prompt[\s\S]*?\n```\w*\n([\s\S]*?)```/);
         if (cloneSection) return cloneSection[1].trim();
 
         const lines = markdown.split('\n');
-        let start = -1;
         for (let i = 0; i < lines.length; i++) {
             if (lines[i].includes('คุณคือผู้พัฒนาเว็บไซต์มืออาชีพ') || lines[i].includes('senior frontend engineer')) {
-                start = i;
-                break;
+                for (let j = i + 1; j < lines.length; j++) {
+                    if (lines[j].trim() === '```') {
+                        return lines.slice(i, j).join('\n').trim();
+                    }
+                }
+                return lines.slice(i).join('\n').trim();
             }
-        }
-        if (start !== -1) {
-            const end = lines.indexOf('```', start);
-            return lines.slice(start, end !== -1 ? end : undefined).join('\n').trim();
         }
         return markdown;
     },

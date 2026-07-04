@@ -45,12 +45,18 @@ const UI = {
     },
 
     copyToClipboard(text) {
-        if (navigator.clipboard) {
-            return navigator.clipboard.writeText(text);
+        if (navigator.clipboard?.writeText) {
+            return navigator.clipboard.writeText(text).catch(() => this._fallbackCopy(text));
         }
+        return this._fallbackCopy(text);
+    },
+
+    _fallbackCopy(text) {
         return new Promise((resolve, reject) => {
             const ta = document.createElement('textarea');
             ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
             document.body.appendChild(ta);
             ta.select();
             try {
