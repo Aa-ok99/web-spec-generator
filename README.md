@@ -1,74 +1,140 @@
 # Web Spec Generator Pro
 
-AI-powered web analysis tool that extracts website content, analyzes it via OpenRouter AI (Gemma/Qwen/Claude), and generates a comprehensive specification document + ready-to-use build prompt.
+> ใส่ลิงก์เว็บไซต์ → AI วิเคราะห์ → ได้ Spec + Prompt พร้อมใช้
 
-## Features
+```
+https://github.com/Aa-ok99/web-spec-generator
+```
 
-- **Analyze** — Enter any URL, AI generates full spec with tech stack, page structure, features, SEO score
-- **Export** — Download spec as PDF or Markdown (.md)
-- **Share** — Get a shareable link for any analysis
-- **History** — View, reload, or delete past analyses (up to 100 entries)
-- **Dark Mode** — Toggle between light and dark themes
-- **API Key** — Use the server default or override with your own OpenRouter key
-- **Responsive** — Works on desktop, tablet, and mobile
+---
 
-## Quick Start
+## ✨ ความสามารถ
 
+| ฟีเจอร์ | รายละเอียด |
+|---------|-----------|
+| วิเคราะห์เว็บ | ใส่ URL → ดึงโครงสร้างเว็บ → AI วิเคราะห์ → ได้ Spec ครบ |
+| Export PDF | ดาวน์โหลด Spec เป็นไฟล์ PDF |
+| Download .md | ดาวน์โหลด Spec เป็นไฟล์ Markdown |
+| คัดลอก Prompt | คัดลอก Prompt สำหรับให้ AI ตัวอื่นสร้างเว็บต่อ |
+| แชร์ลิงก์ | สร้างลิงก์แชร์ให้คนอื่นดู Spec ได้ |
+| ประวัติ | ดู/โหลดซ้ำ/ลบ ประวัติที่วิเคราะห์แล้ว (เก็บ 100 รายการ) |
+| Dark Mode | สลับธีมสว่าง/มืดได้ |
+| Responsive | ใช้ได้ทุกอุปกรณ์ มือถือ แท็บเล็ต คอมพิวเตอร์ |
+
+---
+
+## 🚀 วิธีใช้งาน (สำหรับผู้ใช้ทั่วไป)
+
+### สิ่งที่ต้องมี
+- **Node.js** — [ดาวน์โหลดที่นี่](https://nodejs.org/) (เลือก LTS)
+- **OpenRouter API Key** — [สมัครฟรีที่นี่](https://openrouter.ai/keys) (กด "Create Key")
+
+### ขั้นตอน (คัดลอกแล้ววางทีละคำสั่ง)
+
+**1. ดาวน์โหลดโปรเจค**
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Aa-ok99/web-spec-generator.git
 cd web-spec-generator
-chmod +x start.sh
+```
+
+**2. ติดตั้ง dependencies**
+```bash
+cd backend
+npm install
+cd ..
+```
+
+**3. ตั้งค่า API Key**
+```bash
+# เปิดไฟล์ .env ด้วยโปรแกรม editor (หรือใช้คำสั่งด้านล่าง)
+# แล้วเปลี่ยน sk-or-v1-xxxxxxxx... เป็น Key จริงของคุณ
+nano backend/.env
+```
+
+หรือใช้คำสั่งแทนการเปิด editor:
+```bash
+# ใส่ Key จริงของคุณตรงนี้ (ไม่ต้องมี <>)
+echo 'OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxxxxxxxxxxx' > backend/.env
+echo 'PORT=5000' >> backend/.env
+echo 'OPENROUTER_BASE_URL=https://openrouter.ai/api/v1' >> backend/.env
+```
+
+**4. รันเซิร์ฟเวอร์**
+```bash
 ./start.sh
 ```
 
-Or manually:
-
+หรือรันแบบ manual:
 ```bash
 cd backend
-cp .env.example .env    # or edit .env directly
-npm install
 npm start
 ```
 
-Then open `http://localhost:5000` in your browser.
+**5. เปิดเบราว์เซอร์**
+ไปที่ **http://localhost:5000**
 
-## Environment Variables
+---
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `5000` | Server port |
-| `OPENROUTER_API_KEY` | — | Your OpenRouter API key (required) |
-| `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | OpenRouter API endpoint |
-| `RATE_LIMIT_MAX` | `10` | Max API requests per minute |
-| `CORS_ORIGIN` | `*` | Allowed CORS origin |
+## 🎯 วิธีใช้
 
-## API Endpoints
+1. พิมพ์ลิงก์เว็บที่ต้องการวิเคราะห์ (เช่น `https://www.apple.com/th/iphone/`)
+2. กดปุ่ม **"วิเคราะห์"**
+3. รอ 5-15 วินาที (AI กำลังทำงาน)
+4. ได้ Spec พร้อมใช้งาน:
+   - กด **"คัดลอก Prompt"** → เอาไปให้ AI สร้างเว็บ
+   - กด **"PDF"** → ดาวน์โหลดเป็น PDF
+   - กด **"แชร์"** → ได้ลิงก์ส่งให้เพื่อน
+   - กด **".md"** → ดาวน์โหลดเป็น Markdown
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/analyze` | Analyze a URL `{ url, apiKey? }` |
-| `GET` | `/api/history` | List all history entries |
-| `GET` | `/api/history/:id` | Get a single history entry |
-| `DELETE` | `/api/history/:id` | Delete a history entry |
-| `DELETE` | `/api/history` | Clear all history |
-| `GET` | `/api/share/:id` | Shared spec view (HTML) |
-| `GET` | `/api/share/data/:id` | Shared spec data (JSON) |
-| `GET` | `/api/share/pdf/:id` | Download spec as PDF |
+---
 
-## Tech Stack
+## 📋 API Endpoints (สำหรับนักพัฒนา)
 
-- **Backend**: Node.js, Express, Helmet, jsPDF, nanoid, cheerio
-- **Frontend**: Vanilla JS, CSS3 (Glassmorphism), Inter UI Font
-- **AI**: OpenRouter API (Gemma 4, Qwen3 Coder, Cohere North)
+| Method | Endpoint | คำอธิบาย |
+|--------|----------|---------|
+| `POST` | `/api/analyze` | วิเคราะห์ URL `{ url, apiKey? }` |
+| `GET` | `/api/history` | รายการประวัติทั้งหมด |
+| `GET` | `/api/history/:id` | ดูประวัติรายการ |
+| `DELETE` | `/api/history/:id` | ลบประวัติรายการ |
+| `DELETE` | `/api/history` | ล้างประวัติทั้งหมด |
+| `GET` | `/api/share/:id` | หน้าแชร์ Spec (HTML) |
+| `GET` | `/api/share/data/:id` | ข้อมูล Spec (JSON) |
+| `GET` | `/api/share/pdf/:id` | ดาวน์โหลด PDF |
 
-## Security
+---
 
-- SSRF protection — internal/private IPs blocked
-- URL validation — only http/https allowed
+## ⚙️ ตั้งค่าเพิ่มเติม
+
+แก้ไขไฟล์ `backend/.env`:
+
+```env
+PORT=5000                               # พอร์ตเซิร์ฟเวอร์
+OPENROUTER_API_KEY=sk-or-v1-xxxxx       # API Key ของคุณ
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1  # เปลี่ยน AI provider
+RATE_LIMIT_MAX=10                       # จำกัด request ต่อนาที
+```
+
+---
+
+## 🔒 ความปลอดภัย
+
+- ป้องกัน SSRF (block localhost/private IP)
+- ตรวจสอบ URL (เฉพาะ http/https)
 - Helmet security headers
-- Rate limiting (configurable)
-- Input sanitization (ID length checks, placeholder key detection)
+- Rate limiting
+- ตรวจสอบ Input ทุกจุด
 
-## License
+---
+
+## 📝 หมายเหตุ
+
+- ใช้ AI โมเดล `cohere/north-mini-code:free` (ฟรี) — เปลี่ยนได้ที่ `backend/services/openrouterService.js`
+- ประวัติสูงสุด 100 รายการ (ลบอัตโนมัติเมื่อเกิน)
+- API Key จะถูกเก็บใน Local Storage ของเบราว์เซอร์เท่านั้น
+- เหมาะสำหรับการศึกษาและพัฒนาต่อยอด
+
+---
+
+## 📄 License
 
 MIT
