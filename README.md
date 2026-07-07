@@ -2,7 +2,7 @@
   <br/>
   <img src="https://img.shields.io/badge/version-3.0.0-6366f1?style=for-the-badge&labelColor=0f172a" alt="Version"/>
   <img src="https://img.shields.io/badge/license-MIT-22c55e?style=for-the-badge&labelColor=0f172a" alt="License"/>
-  <img src="https://img.shields.io/badge/ai-cohere/north--mini--code-818cf8?style=for-the-badge&labelColor=0f172a" alt="AI Model"/>
+  <img src="https://img.shields.io/badge/ai-nvidia/nemotron--3--nano--30b--a3b:free-818cf8?style=for-the-badge&labelColor=0f172a" alt="AI Model"/>
   <br/><br/>
 </div>
 
@@ -65,6 +65,7 @@ Open **http://localhost:5000** → paste a URL → click **วิเคราะ
 |---------|--------------|
 | **🎨 Design Extraction** | 8 cheerio extractors — colors, fonts, CSS vars, layout patterns, media queries, animations |
 | **🤖 2-Stage AI Pipeline** | Frontend round (sections 1-8) + Backend round (sections 9-14) — each with full token budget |
+| **⚡ Code Generation** | Generate React + Tailwind app from any spec — live preview via iframe, download as ZIP |
 | **📋 Clone Prompt** | Copy-paste ready prompt for AI to rebuild the site pixel-perfect |
 | **🏗️ Backend Spec** | System architecture, API contracts, data models, event system, recommendation engine |
 | **📄 Export** | PDF, Markdown (.md), HTML, shareable link |
@@ -108,40 +109,35 @@ Open **http://localhost:5000** → paste a URL → click **วิเคราะ
 ## 🏗️ Architecture
 
 ```
-                        ┌─────────────────────────┐
-                        │     Client (Frontend)     │
-                        │  Static HTML/CSS/JS       │
-                        │  Served by Express at /   │
-                        └───────────┬─────────────┘
-                                    │ POST /api/analyze
-                                    ▼
+                         ┌─────────────────────────┐
+                         │     Client (Frontend)     │
+                         │  Static HTML/CSS/JS       │
+                         │  Served by Express at /   │
+                         └───────────┬─────────────┘
+                    ┌────────────────┼─────────────────┐
+                    ▼                ▼                  ▼
+          POST /api/analyze   POST /api/analyze    GET /api/analyze
+                              /generate            /generate/:id/download
 ┌───────────────────────────────────────────────────────────────────┐
-│                    BACKEND (Express + CommonJS)                    │
+│                    BACKEND (Express + TypeScript)                   │
 ├───────────────────────────────────────────────────────────────────┤
 │  Route ──▶ Controller ──▶ Service ──▶ Repository ──▶ JSON File    │
 │                              │                                    │
-│                              ▼                                    │
-│  ┌──────────── 2-Stage Pipeline ───────────────────────────────┐  │
-│  │  ┌─────────┐   ┌──────────┐                                │  │
-│  │  │ Crawl   │──▶│ Analyze  │  (Shared stages 1-2)           │  │
-│  │  └─────────┘   └────┬─────┘                                │  │
-│  │                     │                                       │  │
-│  │          ┌──────────┴──────────┐                            │  │
-│  │          ▼                     ▼                            │  │
-│  │  ┌──────────────┐   ┌──────────────┐                       │  │
-│  │  │ Round 1      │   │ Round 2      │                       │  │
-│  │  │ Frontend     │   │ Backend      │                       │  │
-│  │  │ sections 1-8 │   │ sections 9-14│                       │  │
-│  │  │ 6KB prompt   │   │ 14KB prompt  │                       │  │
-│  │  └──────┬───────┘   └──────┬───────┘                       │  │
-│  │         └────────┬─────────┘                                │  │
-│  │                  ▼                                          │  │
-│  │          ┌──────────────┐                                   │  │
-│  │          │   Combine    │  → Complete 14-section spec       │  │
-│  │          └──────────────┘                                   │  │
-│  └─────────────────────────────────────────────────────────────┘  │
-│                                                                    │
-│  OpenRouter AI ─── llmService.js (retry 2x, backoff 1s→2s)       │
+│          ┌───────────────────┼───────────────────┐                │
+│          ▼                   ▼                    ▼                │
+│  ┌──────────────┐   ┌───────────────┐   ┌──────────────┐         │
+│  │  Spec        │   │  Code Gen     │   │  Preview +   │         │
+│  │  Pipeline    │   │  Service      │   │  ZIP Builder │         │
+│  │  (6 stages)  │   │  (LLM → code) │   │  (iframe,    │         │
+│  │              │   │               │   │   download)  │         │
+│  └──────┬───────┘   └───────┬───────┘   └──────────────┘         │
+│         │                   │                                      │
+│         ▼                   ▼                                      │
+│  ┌─────────────────────────────────────────────┐                   │
+│  │         OpenRouter AI (llmService.ts)        │                   │
+│  │  retry 2x exponential backoff (1s→2s)       │                   │
+│  │  Model: nvidia/nemotron-3-nano-30b-a3b:free │                   │
+│  └─────────────────────────────────────────────┘                   │
 └───────────────────────────────────────────────────────────────────┘
 ```
 
@@ -149,19 +145,22 @@ Open **http://localhost:5000** → paste a URL → click **วิเคราะ
 
 | Path | Role |
 |------|------|
-| `backend/server.js` | Express server, middleware, routes |
-| `backend/config/index.js` | Centralized constants (PORT, MODEL, RATE_LIMIT...) |
-| `backend/prompts/systemPromptFrontend.js` | 6KB prompt — sections 1-8 |
-| `backend/prompts/systemPromptBackend.js` | 14KB prompt — sections 9-14 |
-| `backend/services/pipelineService.js` | 2-stage pipeline orchestrator |
-| `backend/services/crawlerService.js` | cheerio-based web scraper |
-| `backend/services/analyzerService.js` | Layout/pattern/design detection |
-| `backend/services/llmService.js` | OpenRouter API caller with retry |
-| `backend/services/promptBuilderService.js` | Build frontend/backend prompts |
-| `backend/services/postProcessorService.js` | Validate + combine specs |
-| `backend/repositories/historyRepository.js` | Async CRUD (swap-ready for PostgreSQL) |
-| `backend/utils/extractors.js` | 8 cheerio extractors |
-| `backend/utils/pipelineLogger.js` | Per-step debug tracing |
+| `backend/server.ts` | Express server, middleware, routes |
+| `backend/config/index.ts` | Centralized constants (PORT, MODEL, RATE_LIMIT...) |
+| `backend/prompts/systemPromptFrontend.ts` | 6KB prompt — sections 1-8 |
+| `backend/prompts/systemPromptBackend.ts` | 14KB prompt — sections 9-14 |
+| `backend/services/pipelineService.ts` | 6-stage pipeline orchestrator |
+| `backend/services/codeGenService.ts` | Code generation from spec (React + Tailwind) |
+| `backend/services/crawlerService.ts` | cheerio-based web scraper |
+| `backend/services/analyzerService.ts` | Layout/pattern/design detection |
+| `backend/services/llmService.ts` | OpenRouter API caller with retry |
+| `backend/services/promptBuilderService.ts` | Build frontend/backend prompts |
+| `backend/services/postProcessorService.ts` | Validate + combine specs |
+| `backend/repositories/historyRepository.ts` | Async CRUD (swap-ready for PostgreSQL) |
+| `backend/utils/extractors.ts` | 8 cheerio extractors |
+| `backend/utils/pipelineLogger.ts` | Per-step debug tracing |
+| `backend/utils/previewBuilder.ts` | Build live preview iframe (React 18 + Babel) |
+| `backend/utils/zipBuilder.ts` | Build downloadable ZIP with full Vite project |
 
 ---
 
@@ -183,6 +182,9 @@ bash skill/install.sh
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/analyze` | Analyze URL `{ url, apiKey? }` → returns 14-section spec |
+| `POST` | `/api/analyze/generate` | Generate React app from spec `{ specId, apiKey? }` |
+| `POST` | `/api/analyze/from-prompt` | Generate app from text prompt `{ prompt, apiKey? }` |
+| `GET` | `/api/analyze/generate/:id/download` | Download generated app as ZIP |
 | `GET` | `/api/history` | List all history (with spec preview) |
 | `GET` | `/api/history/:id` | Get single history entry |
 | `DELETE` | `/api/history/:id` | Delete history item |
@@ -200,7 +202,7 @@ bash skill/install.sh
 | `PORT` | `5000` | Server port |
 | `OPENROUTER_API_KEY` | — | OpenRouter API key (required) |
 | `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | AI provider endpoint |
-| `MODEL` | `cohere/north-mini-code:free` | AI model (free) |
+| `MODEL` | `nvidia/nemotron-3-nano-30b-a3b:free` | AI model (free, used for both spec + code gen) |
 | `RATE_LIMIT_MAX` | `10` | Max requests per minute |
 | `CORS_ORIGIN` | `*` | Allowed origins |
 | `HISTORY_PATH` | `backend/data/history.json` | History storage (swap to PostgreSQL via env) |
@@ -214,7 +216,7 @@ bash skill/install.sh
 - **Helmet headers** — security headers on all responses
 - **Rate limiting** — configurable per-minute limit
 - **Input sanitization** — validation at every layer (route → controller → service)
-- **API key safety** — resolved server-side, never exposed to frontend
+- **API key safety** — resolved server-side (client key → server key fallback), never exposed to frontend
 
 ---
 

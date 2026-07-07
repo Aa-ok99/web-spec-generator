@@ -6,7 +6,7 @@ const postProcessorService = require('./postProcessorService');
 const logger = require('../utils/pipelineLogger');
 
 async function run(url, apiKey) {
-  const context = {
+  const context: { url: string; steps: Record<string, any>; startTime: number } = {
     url,
     steps: {},
     startTime: Date.now()
@@ -65,9 +65,9 @@ async function run(url, apiKey) {
   logger.step('postProcessor', 'start', { round: 1, type: 'frontend' });
   let frontendResult;
   try {
-    frontendResult = await postProcessorService.process(frontendOutput);
-    context.steps.postProcessorFrontend = { status: 'ok', success: frontendResult.success };
-    logger.step('postProcessor', 'end', { round: 1, type: 'frontend', success: frontendResult.success });
+    frontendResult = await postProcessorService.process(frontendOutput, 'frontend');
+    context.steps.postProcessorFrontend = { status: 'ok', success: frontendResult.success, warnings: frontendResult.warnings };
+    logger.step('postProcessor', 'end', { round: 1, type: 'frontend', success: frontendResult.success, warnings: frontendResult.warnings });
   } catch (err) {
     logger.error('postProcessor', err);
     throw err;
@@ -99,9 +99,9 @@ async function run(url, apiKey) {
   logger.step('postProcessor', 'start', { round: 2, type: 'backend' });
   let backendResult;
   try {
-    backendResult = await postProcessorService.process(backendOutput);
-    context.steps.postProcessorBackend = { status: 'ok', success: backendResult.success };
-    logger.step('postProcessor', 'end', { round: 2, type: 'backend', success: backendResult.success });
+    backendResult = await postProcessorService.process(backendOutput, 'backend');
+    context.steps.postProcessorBackend = { status: 'ok', success: backendResult.success, warnings: backendResult.warnings };
+    logger.step('postProcessor', 'end', { round: 2, type: 'backend', success: backendResult.success, warnings: backendResult.warnings });
   } catch (err) {
     logger.error('postProcessor', err);
     throw err;

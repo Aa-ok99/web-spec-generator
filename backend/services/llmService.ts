@@ -1,7 +1,7 @@
 const axios = require('axios');
 const config = require('../config');
 
-async function call(prompt, apiKey, retries = 2) {
+async function call(prompt, apiKey, retries = 2, maxTokens, model) {
   let lastError;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -9,13 +9,13 @@ async function call(prompt, apiKey, retries = 2) {
       const response = await axios.post(
         `${config.OPENROUTER_BASE_URL}/chat/completions`,
         {
-          model: config.MODEL,
+          model: model || config.MODEL,
           messages: [
             { role: 'system', content: prompt.system },
             { role: 'user', content: prompt.user }
           ],
           temperature: 0.3,
-          max_tokens: 8192
+          max_tokens: maxTokens || 8192
         },
         {
           headers: {
@@ -24,11 +24,29 @@ async function call(prompt, apiKey, retries = 2) {
             'HTTP-Referer': 'https://web-spec-generator.local',
             'X-Title': 'Web Spec Generator'
           },
-          timeout: 45000
+          timeout: 60000
         }
       );
 
-      return response.data.choices[0].message.content;
+      const choice = response.data?.choices?.[0];
+      const content = choice?.message?.content;
+
+      if (content != null && typeof content === 'string') {
+        return content;
+      }
+
+      const errDetail = choice?.error || response.data?.error;
+      const finishReason = choice?.finish_reason;
+      console.error('LLM empty content response:', JSON.stringify({
+        finishReason,
+        error: errDetail,
+        model: config.MODEL,
+        hasChoices: !!response.data?.choices?.length
+      }));
+      throw new Error(
+        errDetail?.message ||
+        `AI returned empty content (finish_reason: ${finishReason || 'unknown'})`
+      );
     } catch (error) {
       lastError = error;
       const errMsg = error.response?.data?.error?.message || error.message;

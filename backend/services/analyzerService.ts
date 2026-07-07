@@ -32,6 +32,57 @@ function detectUIPatterns(websiteData) {
   return patterns;
 }
 
+function detectSiteCategory(websiteData) {
+  const text = (websiteData.bodyText || '').toLowerCase();
+  const headings = (websiteData.headings || []).join(' ').toLowerCase();
+  const scripts = (websiteData.detectedScripts || []).join(' ').toLowerCase();
+  const combined = text + ' ' + headings;
+
+  if (/shopify|woocommerce|magento|add to cart|add to bag|buy now|shopping cart|checkout|product|price|sale|shop/i.test(combined) ||
+      scripts.includes('shopify') || scripts.includes('woocommerce')) {
+    return 'e-commerce';
+  }
+
+  if (/blog|article|post|read more|categories|tags|published|author|comments/i.test(headings) &&
+      /blog|article/i.test(combined)) {
+    return 'blog';
+  }
+
+  if (/video|watch|channel|subscribe|upload|playlist|stream/i.test(combined) &&
+      (scripts.includes('youtube') || scripts.includes('videojs') || scripts.includes('plyr'))) {
+    return 'video-platform';
+  }
+
+  if (/login|sign up|register|dashboard|profile|follow|feed|post|share|like|comment/i.test(combined) &&
+      /profile|feed|post/i.test(text)) {
+    return 'social-media';
+  }
+
+  if (/login|sign up|dashboard|pricing|plan|get started|trial|feature|integration|api/i.test(combined) &&
+      /saas|software|platform|service/i.test(text)) {
+    return 'saas';
+  }
+
+  if (/portfolio|work|project|case study|gallery|showcase/i.test(headings)) {
+    return 'portfolio';
+  }
+
+  if (/pricing|plan|price|feature|hero|landing|get started|cta|sign.?up/i.test(combined) &&
+      headings.split(' ').length < 10) {
+    return 'landing-page';
+  }
+
+  if (/docs|documentation|guide|tutorial|reference|api|sdk/i.test(headings)) {
+    return 'documentation';
+  }
+
+  if (/news|breaking|headline|latest|update|story/i.test(headings)) {
+    return 'news';
+  }
+
+  return 'other';
+}
+
 function extractDesignHints(websiteData) {
   return {
     colors: websiteData.colors || [],
@@ -54,6 +105,7 @@ function analyze(websiteData) {
     layoutRegions: detectLayoutRegions(websiteData),
     uiPatterns: detectUIPatterns(websiteData),
     designHints: extractDesignHints(websiteData),
+    siteCategory: detectSiteCategory(websiteData),
     contentStructure: {
       headings: websiteData.headings || [],
       navLinks: websiteData.navLinks || [],

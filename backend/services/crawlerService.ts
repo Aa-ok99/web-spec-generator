@@ -12,13 +12,30 @@ const {
 } = require('../utils/extractors');
 
 async function crawl(url) {
-  const response = await axios.get(url, {
-    timeout: 15000,
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    },
-    maxRedirects: 5
-  });
+  let response;
+  try {
+    response = await axios.get(url, {
+      timeout: 15000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      maxRedirects: 5
+    });
+  } catch (err) {
+    if (err.code === 'ECONNABORTED') {
+      throw new Error(`Request timeout: ${url} did not respond within 15 seconds`);
+    }
+    if (err.code === 'ENOTFOUND') {
+      throw new Error(`DNS resolution failed: ${url}`);
+    }
+    if (err.code === 'ECONNREFUSED') {
+      throw new Error(`Connection refused: ${url}`);
+    }
+    if (err.response) {
+      throw new Error(`HTTP ${err.response.status}: ${err.response.statusText} for ${url}`);
+    }
+    throw new Error(`Network error fetching ${url}: ${err.message}`);
+  }
 
   const html = response.data;
   const $ = cheerio.load(html);

@@ -65,7 +65,7 @@ function extractCssVars($) {
 }
 
 function extractDesignTokens($) {
-  const tokens = {};
+  const tokens: Record<string, any> = {};
 
   const radius = new Set();
   $('[style*="border-radius"]').each((_, el) => {

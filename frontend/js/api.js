@@ -14,6 +14,36 @@ const API = {
         return response.json();
     },
 
+    async generateFromPrompt(prompt, apiKey) {
+        const response = await fetch(`${this.baseURL}/api/analyze/from-prompt`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, apiKey })
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Code generation failed');
+        }
+        return response.json();
+    },
+
+    async generateCode(specId, apiKey) {
+        const response = await fetch(`${this.baseURL}/api/analyze/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ specId, apiKey })
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Code generation failed');
+        }
+        return response.json();
+    },
+
+    getDownloadUrl(id) {
+        return `${this.baseURL}/api/analyze/generate/${id}/download`;
+    },
+
     async getHistory() {
         const response = await fetch(`${this.baseURL}/api/history`);
         if (!response.ok) throw new Error('Failed to fetch history');

@@ -26,7 +26,10 @@
         </header>
 
         <div class="tabs">
-            <button class="tab active" data-tab="analyze">
+            <button class="tab active" data-tab="prompt">
+                <i class="fas fa-wand-magic-sparkles"></i> Prompt → App
+            </button>
+            <button class="tab" data-tab="analyze">
                 <i class="fas fa-magnifying-glass"></i> วิเคราะห์
             </button>
             <button class="tab" data-tab="history">
@@ -38,7 +41,7 @@
             </button>
         </div>
 
-        <section class="tab-content active" id="tab-analyze">
+        <section class="tab-content" id="tab-analyze">
             <div class="card">
                 <h2><i class="fas fa-link" style="color:var(--accent);"></i> ใส่ลิงก์เว็บไซต์</h2>
                 <p style="color:var(--text-secondary); font-size:14px; margin-bottom:18px;">
@@ -86,8 +89,113 @@
                         <i class="fas fa-link"></i> ลิงก์แชร์: <span id="shareUrlDisplay" style="color:var(--accent);"></span>
                     </small>
                 </div>
+
+                <!-- Generate App Area -->
+                <div class="generate-area">
+                    <div>
+                        <strong style="font-size:15px; display:flex; align-items:center; gap:8px;">
+                            <i class="fas fa-rocket" style="color:var(--accent);"></i>
+                            สร้าง React App จาก Spec
+                        </strong>
+                        <span style="font-size:13px; color:var(--text-secondary);">
+                            AI จะสร้าง React + Tailwind app ที่ทำงานได้จริง
+                        </span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                        <div class="gen-loader" id="genLoader">
+                            <div class="spinner"></div>
+                            <span>กำลังสร้าง... (~30 วินาที)</span>
+                        </div>
+                        <button class="btn btn-primary" id="generateAppBtn">
+                            <i class="fas fa-rocket"></i> สร้าง React App
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="tab-content active" id="tab-prompt">
+            <div class="prompt-hero">
+                <div class="prompt-hero-icon">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                </div>
+                <h2 class="prompt-hero-title">เปลี่ยนไอเดียของคุณ<br/>ให้เป็นแอปได้ทันที</h2>
+                <p class="prompt-hero-desc">
+                    บอก AI ว่าคุณต้องการอะไร — มันจะสร้าง React + Tailwind พร้อม Live Preview ให้คุณเลย
+                </p>
+                <textarea id="promptInput" class="prompt-textarea" placeholder="เช่น สร้าง YouTube clone ด้วยธีมมืด พร้อมวิดีโอแนะนำ, ค้นหา, และเมนูด้านข้าง...">Create a YouTube clone with dark theme, featuring video grid, search bar, sidebar navigation, and video player page</textarea>
+
+                <div class="template-grid" id="templateGrid">
+                    <button class="template-btn" data-prompt="Create a YouTube clone with dark theme, video grid, search, sidebar, and video player">
+                        <i class="fab fa-youtube"></i> YouTube Clone
+                    </button>
+                    <button class="template-btn" data-prompt="Build a Kanban board with drag-and-drop, multiple columns, task cards, and local storage persistence">
+                        <i class="fas fa-columns"></i> Kanban Board
+                    </button>
+                    <button class="template-btn" data-prompt="Make a habit tracker with heatmap, daily check-in, streaks, and weekly progress charts">
+                        <i class="fas fa-calendar-check"></i> Habit Tracker
+                    </button>
+                    <button class="template-btn" data-prompt="Create a weather app with 5-day forecast, current conditions, search by city, and animated icons">
+                        <i class="fas fa-cloud-sun"></i> Weather App
+                    </button>
+                    <button class="template-btn" data-prompt="Build a calculator with history, dark theme, keyboard support, and basic math operations">
+                        <i class="fas fa-calculator"></i> Calculator
+                    </button>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:8px;">
+                    <button class="btn btn-primary btn-generate" id="promptGenerateBtn">
+                        <i class="fas fa-wand-magic-sparkles"></i> สร้าง App
+                    </button>
+                    <div class="loader" id="promptLoader">
+                        <div class="spinner"></div>
+                        <span>กำลังสร้าง... (~30-60 วินาที)</span>
+                    </div>
+                </div>
             </div>
         </section>
+
+        <!-- Shared Preview Section -->
+        <div class="card preview-section" id="previewSection">
+            <div class="preview-header">
+                <h2>
+                    <i class="fas fa-laptop-code" style="color:var(--accent);"></i>
+                    <span id="previewTitle">แอปพลิเคชันที่สร้าง</span>
+                </h2>
+                <div class="preview-actions">
+                    <button class="btn btn-outline btn-sm" id="copyCodeBtn">
+                        <i class="fas fa-copy"></i> คัดลอกโค้ด
+                    </button>
+                    <button class="btn btn-success btn-sm" id="downloadZipBtn">
+                        <i class="fas fa-file-zipper"></i> ดาวน์โหลด ZIP
+                    </button>
+                    <button class="btn btn-outline btn-sm" id="closePreviewBtn">
+                        <i class="fas fa-times"></i> ปิด
+                    </button>
+                </div>
+            </div>
+            <div class="split-screen">
+                <div class="split-panel">
+                    <div class="split-panel-header">
+                        <span><i class="fas fa-file-code"></i> App.jsx</span>
+                        <span style="font-weight:400; font-size:11px; color:var(--text-muted);">React + Tailwind</span>
+                    </div>
+                    <div class="code-panel-body">
+                        <pre><code id="codeContent">// Click "สร้าง App" to generate code</code></pre>
+                    </div>
+                </div>
+                <div class="split-panel">
+                    <div class="split-panel-header">
+                        <span><i class="fas fa-eye"></i> Live Preview</span>
+                        <span style="font-weight:400; font-size:11px; color:var(--text-muted);">iframe preview</span>
+                    </div>
+                    <div class="preview-panel-body">
+                        <iframe id="previewIframe" title="Live Preview" srcdoc="<html><body style='display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;color:#888;background:#fafafa;'><p>กด &quot;สร้าง App&quot; เพื่อดูตัวอย่าง</p></body></html>"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <section class="tab-content" id="tab-history">
             <div class="card">

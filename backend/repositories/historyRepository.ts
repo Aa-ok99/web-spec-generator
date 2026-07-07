@@ -31,9 +31,20 @@ async function deleteById(id) {
   return true;
 }
 
+async function updateGeneratedCode(id, generatedEntry) {
+  const history = await getAll();
+  const index = history.findIndex(h => h.id === id);
+  if (index === -1) {
+    throw Object.assign(new Error('History item not found'), { statusCode: 404 });
+  }
+  history[index].generatedCode = generatedEntry;
+  await fs.writeJson(config.HISTORY_PATH, history, { spaces: 2 });
+  return generatedEntry;
+}
+
 async function clear() {
   await fs.writeJson(config.HISTORY_PATH, []);
   return true;
 }
 
-module.exports = { getAll, getById, add, deleteById, clear };
+module.exports = { getAll, getById, add, deleteById, updateGeneratedCode, clear };

@@ -7,8 +7,9 @@ function buildAnalysisHeader(analysisResult) {
   const patterns = analysisResult.uiPatterns?.join(', ') || 'unknown';
   const colors = analysisResult.designHints?.colors?.slice(0, 8).join(', ') || 'unknown';
   const fonts = analysisResult.designHints?.fonts?.slice(0, 5).join(', ') || 'unknown';
+  const category = analysisResult.siteCategory || 'unknown';
 
-  return `[ANALYSIS CONTEXT]\nDetected Layout: ${regions}\nDetected UI Patterns: ${patterns}\nKey Colors: ${colors}\nKey Fonts: ${fonts}\n\n`;
+  return `[ANALYSIS CONTEXT]\nSite Category: ${category}\nDetected Layout: ${regions}\nDetected UI Patterns: ${patterns}\nKey Colors: ${colors}\nKey Fonts: ${fonts}\n\n`;
 }
 
 function buildFrontend(analysisResult, websiteData) {

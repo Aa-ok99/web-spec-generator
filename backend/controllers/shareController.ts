@@ -102,7 +102,7 @@ function getShareView(req, res) {
           fetch('/api/share/data/' + id)
             .then(res => res.json())
             .then(data => {
-              document.getElementById('markdownPreview').textContent = data.spec;
+              document.getElementById('markdownPreview').innerHTML = (typeof UI !== 'undefined' && UI.markdownToHtml) ? UI.markdownToHtml(data.spec) : data.spec;
               document.getElementById('downloadPdfBtn').onclick = () => {
                 window.open('/api/share/pdf/' + id, '_blank');
               };

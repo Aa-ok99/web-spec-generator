@@ -88,40 +88,107 @@ const UI = {
     },
 
     markdownToHtml(md) {
-        let html = md
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-            .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-            .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.+?)\*/g, '<em>$1</em>')
-            .replace(/`(.+?)`/g, '<code>$1</code>')
-            .replace(/^- (.+)$/gm, '<li>$1</li>')
-            .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
-            .replace(/^\|(.+)\|$/gm, (m) => {
-                const cells = m.slice(1, -1).split('|').map(c => c.trim());
-                if (cells.every(c => /^[-:\s]+$/.test(c))) return '';
-                return '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
-            })
-            .replace(/\n{2,}/g, '</p><p>')
-            .replace(/\n/g, '<br>');
+        const lines = md.split('\n');
+        const out = [];
+        let inCode = false;
+        let inTable = false;
+        let inList = false;
+        let listType = null;
 
-        html = '<p>' + html + '</p>';
-        html = html.replace(/<li><br>/g, '<li>');
-        html = html.replace(/<br><\/li>/g, '</li>');
-        html = html.replace(/(<li>.*?<\/li>)/gs, (m) => {
-            if ((m.match(/<li>/g) || []).length > 1) return m;
-            return '<ul>' + m + '</ul>';
-        });
-        html = html.replace(/<ul><ul>/g, '<ul>');
-        html = html.replace(/<\/ul><\/ul>/g, '</ul>');
-        html = html.replace(/<tr>.*?<\/tr>/gs, (m) => '<table>' + m + '</table>');
-        html = html.replace(/<table><table>/g, '<table>');
-        html = html.replace(/<\/table><\/table>/g, '</table>');
+        function escapeHtml(text) {
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
 
-        return html;
+        function inlineHtml(text) {
+            return escapeHtml(text)
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/`(.+?)`/g, '<code>$1</code>');
+        }
+
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+
+            if (/^```/.test(line)) {
+                if (inCode) {
+                    out.push('</code></pre>');
+                    inCode = false;
+                } else {
+                    out.push('<pre><code>');
+                    inCode = true;
+                }
+                continue;
+            }
+
+            if (inCode) {
+                out.push(escapeHtml(line) + '\n');
+                continue;
+            }
+
+            if (/^\|.+\|$/.test(line.trim())) {
+                const cells = line.trim().slice(1, -1).split('|').map(c => c.trim());
+                if (cells.every(c => /^[-:\s]+$/.test(c))) {
+                    if (inTable) out.push('</thead><tbody>');
+                    continue;
+                }
+                if (!inTable) {
+                    out.push('<table><thead><tr>');
+                    inTable = true;
+                } else if (out[out.length - 1] === '</thead><tbody>') {
+                    out.push('<tr>');
+                } else {
+                    out.push('<tr>');
+                }
+                const tag = inTable && out.join('').includes('</thead>') ? 'td' : 'th';
+                out.push(cells.map(c => `<${tag}>${inlineHtml(c)}</${tag}>`).join('') + '</tr>');
+                continue;
+            }
+
+            if (inTable) {
+                out.push('</tbody></table>');
+                inTable = false;
+            }
+
+            if (/^#{1,3}\s/.test(line)) {
+                if (inList) { out.push(`</${listType}>`); inList = false; listType = null; }
+                const level = line.match(/^#+/)[0].length;
+                out.push(`<h${level}>${inlineHtml(line.replace(/^#+\s*/, ''))}</h${level}>`);
+                continue;
+            }
+
+            if (/^---+\s*$/.test(line.trim())) {
+                if (inList) { out.push(`</${listType}>`); inList = false; listType = null; }
+                out.push('<hr>');
+                continue;
+            }
+
+            if (/^[-*]\s/.test(line)) {
+                if (!inList) { inList = true; listType = 'ul'; out.push('<ul>'); }
+                out.push(`<li>${inlineHtml(line.replace(/^[-*]\s*/, ''))}</li>`);
+                continue;
+            }
+
+            if (/^\d+\.\s/.test(line)) {
+                if (!inList) { inList = true; listType = 'ol'; out.push('<ol>'); }
+                out.push(`<li>${inlineHtml(line.replace(/^\d+\.\s*/, ''))}</li>`);
+                continue;
+            }
+
+            if (line.trim() === '') {
+                if (inList) { out.push(`</${listType}>`); inList = false; listType = null; }
+                continue;
+            }
+
+            if (inList) { out.push(`</${listType}>`); inList = false; listType = null; }
+
+            out.push(`<p>${inlineHtml(line)}</p>`);
+        }
+
+        if (inCode) out.push('</code></pre>');
+        if (inTable) out.push('</tbody></table>');
+        if (inList) out.push(`</${listType}>`);
+
+        return out.join('\n');
     },
 
     exportHtml(markdown, filename) {

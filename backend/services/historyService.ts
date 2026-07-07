@@ -1,4 +1,4 @@
-const historyRepository = require('../repositories/historyRepository');
+const historyRepository = require('../repositories');
 
 async function getAll() {
   const history = await historyRepository.getAll();
@@ -41,4 +41,11 @@ async function save(entry) {
   return await historyRepository.add(entry);
 }
 
-module.exports = { getAll, getById, deleteById, clear, save };
+async function updateGeneratedCode(id, generatedEntry) {
+  if (!id || typeof id !== 'string' || id.length > 20) {
+    throw Object.assign(new Error('Invalid ID'), { statusCode: 400 });
+  }
+  return await historyRepository.updateGeneratedCode(id, generatedEntry);
+}
+
+module.exports = { getAll, getById, deleteById, clear, save, updateGeneratedCode };

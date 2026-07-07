@@ -3,6 +3,8 @@ const App = {
     currentMarkdown: '',
     currentFilename: '',
     currentPromptOnly: '',
+    generatedCode: null,
+    generatedId: null,
 
     init() {
         this.bindEvents();
@@ -27,6 +29,25 @@ const App = {
         document.getElementById('downloadMdBtn').addEventListener('click', () => this.downloadMd());
         document.getElementById('exportHtmlBtn').addEventListener('click', () => this.exportHtml());
 
+        document.getElementById('generateAppBtn').addEventListener('click', () => this.generateApp());
+        document.getElementById('promptGenerateBtn').addEventListener('click', () => this.promptGenerate());
+        document.getElementById('downloadZipBtn').addEventListener('click', () => this.downloadZip());
+        document.getElementById('copyCodeBtn').addEventListener('click', () => this.copyCode());
+        document.getElementById('closePreviewBtn').addEventListener('click', () => this.closePreview());
+
+        const promptInput = document.getElementById('promptInput');
+        promptInput.addEventListener('input', () => this.autoResize(promptInput));
+        promptInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) this.promptGenerate();
+        });
+
+        document.querySelectorAll('.template-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('promptInput').value = btn.dataset.prompt;
+                this.autoResize(document.getElementById('promptInput'));
+            });
+        });
+
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 UI.switchTab(tab.dataset.tab);
@@ -43,6 +64,11 @@ const App = {
                 HistoryManager.loadHistory();
             }
         });
+    },
+
+    autoResize(el) {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
     },
 
     async analyze() {
@@ -70,10 +96,13 @@ const App = {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังวิเคราะห์...';
         loader.classList.add('active');
         document.getElementById('result').style.display = 'none';
+        document.getElementById('previewSection').style.display = 'none';
 
         try {
             const result = await API.analyze(validUrl.href, apiKey);
             this.currentId = result.id;
+            this.generatedCode = null;
+            this.generatedId = null;
             this.showResult(result.spec, result.url, result.id);
             UI.showToast('วิเคราะห์สำเร็จ!');
             HistoryManager.loadHistory();
@@ -95,7 +124,7 @@ const App = {
         this.currentFilename = UI.sanitizeFilename(url || 'spec');
         this.currentPromptOnly = this.extractPrompt(markdown);
 
-        document.getElementById('markdownPreview').textContent = markdown;
+        document.getElementById('markdownPreview').innerHTML = UI.markdownToHtml(markdown);
         document.getElementById('filenameBadge').innerHTML =
             `<i class="far fa-file"></i> ${this.currentFilename}`;
 
@@ -103,7 +132,122 @@ const App = {
         document.getElementById('shareUrlDisplay').textContent = shareUrl;
 
         document.getElementById('result').style.display = 'block';
+        document.getElementById('previewSection').style.display = 'none';
         document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    },
+
+    async generateApp() {
+        if (!this.currentId) {
+            UI.showToast('กรุณาวิเคราะห์ URL ก่อน', 'warning');
+            return;
+        }
+
+        let apiKey = localStorage.getItem('openrouter_api_key') || '';
+        if (apiKey.includes('xxxxxxxx')) apiKey = '';
+
+        const btn = document.getElementById('generateAppBtn');
+        const genLoader = document.getElementById('genLoader');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังสร้าง...';
+        genLoader.classList.add('active');
+
+        try {
+            const result = await API.generateCode(this.currentId, apiKey);
+            this.generatedCode = result.code;
+            this.generatedId = result.id;
+
+            document.getElementById('codeContent').textContent = result.code;
+            document.getElementById('previewIframe').srcdoc = result.previewHtml;
+            document.getElementById('previewTitle').textContent = 'แอปพลิเคชันที่สร้างจาก Spec';
+
+            document.getElementById('previewSection').style.display = 'block';
+            document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            if (result.cached) {
+                UI.showToast('โหลดจากแคชสำเร็จ!');
+            } else {
+                UI.showToast('สร้างแอปสำเร็จ!');
+            }
+        } catch (error) {
+            UI.showToast(error.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-rocket"></i> สร้าง React App';
+            genLoader.classList.remove('active');
+        }
+    },
+
+    async promptGenerate() {
+        const prompt = document.getElementById('promptInput').value.trim();
+        if (!prompt) {
+            UI.showToast('กรุณาใส่ prompt', 'warning');
+            return;
+        }
+
+        let apiKey = localStorage.getItem('openrouter_api_key') || '';
+        if (apiKey.includes('xxxxxxxx')) apiKey = '';
+
+        const btn = document.getElementById('promptGenerateBtn');
+        const loader = document.getElementById('promptLoader');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังสร้าง...';
+        loader.classList.add('active');
+
+        try {
+            const result = await API.generateFromPrompt(prompt, apiKey);
+            this.generatedCode = result.code;
+            this.generatedId = result.id;
+            this.currentId = result.id;
+
+            document.getElementById('codeContent').textContent = result.code;
+            document.getElementById('previewIframe').srcdoc = result.previewHtml;
+            document.getElementById('previewTitle').textContent = 'Prompt → App';
+
+            document.getElementById('previewSection').style.display = 'block';
+            document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            UI.showToast('สร้างแอปสำเร็จ!');
+            HistoryManager.loadHistory();
+        } catch (error) {
+            UI.showToast(error.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> สร้าง App';
+            loader.classList.remove('active');
+        }
+    },
+
+    downloadZip() {
+        if (!this.currentId) {
+            UI.showToast('ยังไม่มีข้อมูล', 'warning');
+            return;
+        }
+        const url = API.getDownloadUrl(this.currentId);
+        window.open(url, '_blank');
+        UI.showToast('กำลังดาวน์โหลด ZIP...');
+    },
+
+    async copyCode() {
+        if (!this.generatedCode) {
+            UI.showToast('ยังไม่มีโค้ด', 'warning');
+            return;
+        }
+        try {
+            await UI.copyToClipboard(this.generatedCode);
+            UI.showToast('คัดลอกโค้ดแล้ว!');
+        } catch (_) {
+            UI.showToast('ไม่สามารถคัดลอกได้', 'error');
+        }
+    },
+
+    closePreview() {
+        document.getElementById('previewSection').style.display = 'none';
+        const activeTab = document.querySelector('.tab.active');
+        if (activeTab) {
+            document.getElementById(`tab-${activeTab.dataset.tab}`)?.scrollIntoView({ behavior: 'smooth' });
+        }
     },
 
     extractPrompt(markdown) {

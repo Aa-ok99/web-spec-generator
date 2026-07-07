@@ -29,20 +29,25 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-app.use(express.static(path.join(__dirname, '../frontend')));
+app.use(express.static(path.join(config.BACKEND_ROOT, '..', 'frontend')));
 
 app.use('/api/analyze', require('./routes/analyze'));
 app.use('/api/history', require('./routes/history'));
 app.use('/api/share', require('./routes/share'));
 
-fs.ensureFileSync(config.HISTORY_PATH);
-try {
-  const content = fs.readFileSync(config.HISTORY_PATH, 'utf-8');
-  if (!content || content.trim() === '') {
+if (config.DB_URL) {
+  console.log('Using PostgreSQL for history storage');
+} else {
+  fs.ensureFileSync(config.HISTORY_PATH);
+  try {
+    const content = fs.readFileSync(config.HISTORY_PATH, 'utf-8');
+    if (!content || content.trim() === '') {
+      fs.writeJsonSync(config.HISTORY_PATH, []);
+    }
+  } catch {
     fs.writeJsonSync(config.HISTORY_PATH, []);
   }
-} catch {
-  fs.writeJsonSync(config.HISTORY_PATH, []);
+  console.log(`History saved at ${config.HISTORY_PATH}`);
 }
 
 if (!config.OPENROUTER_API_KEY) {
@@ -52,9 +57,18 @@ if (!process.env.OPENROUTER_BASE_URL) {
   console.warn('INFO: OPENROUTER_BASE_URL not set, using default.');
 }
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`History saved at ${config.HISTORY_PATH}`);
+  console.log(`Storage: ${config.DB_URL ? 'PostgreSQL' : 'JSON file'}`);
   console.log(`OpenRouter API: ${config.OPENROUTER_API_KEY ? 'Configured' : 'Missing'}`);
+  console.log(`Model: ${config.MODEL}`);
   console.log(`Rate limit: ${config.RATE_LIMIT_MAX} req/min`);
+});
+
+server.on('error', (err) => {
+  console.error(`Server error: ${err.message}`);
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Try: fuser -k ${PORT}/tcp`);
+  }
+  process.exit(1);
 });
